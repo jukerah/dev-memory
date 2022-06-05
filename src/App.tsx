@@ -29,6 +29,45 @@ const App = () => {
     return () => clearInterval(timer);
   }, [playing, timeElapsed]);
 
+  useEffect(() => {
+    if (shownCount === 2) {
+      let opened = gridItems.filter(item => item.shown === true);
+      
+      if (opened.length === 2) {
+        if (opened[0].item === opened[1].item) {          
+          let tmpGrid = [...gridItems];
+
+          for (let i in tmpGrid) {
+            if(tmpGrid[i].shown) {
+              tmpGrid[i].permanentShown = true;
+              tmpGrid[i].shown = false;
+            }
+          }
+          setGridItems(tmpGrid);
+          setShownCount(0);
+        } else {
+          setTimeout(() => {
+            let tmpGrid = [...gridItems];
+          
+            for (let i in tmpGrid) {
+              tmpGrid[i].shown = false;
+            }
+            setGridItems(tmpGrid);
+            setShownCount(0);
+          }, 1000);
+        }
+
+        setMoveCount(moveCount => moveCount + 1);
+      }
+    }
+  }, [shownCount, gridItems])
+
+  useEffect(() => {
+    if (moveCount > 0 && gridItems.every(item => item.permanentShown === true)) {
+      setPlaying(false);
+    }
+  }, [moveCount, gridItems]);
+
   const resetAndCreatGrid = () => {
     //step 1 - reset game
     setTimeElapsed(0);
@@ -86,7 +125,7 @@ const App = () => {
           />
           <InfoItem
             label="Movimentos"
-            value="0"
+            value={moveCount.toString()}
           />
         </C.InfoArea>
 

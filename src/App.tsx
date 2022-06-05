@@ -10,22 +10,30 @@ import { GridItem } from './components/GridItem';
 
 import { GridItemType } from './types/GridItemType';
 import { items } from './data/items';
+import { formatTimeElapsed } from './helpers/formatTimeElapsed';
 
 const App = () => {
 
   const [playing, setPlaying] = useState<boolean>(false);
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
   const [moveCount, setMoveCount] = useState<number>(0);
-  const [showCount, setShowCount] = useState<number>(0);
+  const [shownCount, setShownCount] = useState<number>(0);
   const [gridItems, setGridItems] = useState<GridItemType[]>([]);
 
   useEffect(() => resetAndCreatGrid(), []);
+
+  useEffect(() => {
+    const timer = setInterval(() =>{
+      if(playing) setTimeElapsed(timeElapsed + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [playing, timeElapsed]);
 
   const resetAndCreatGrid = () => {
     //step 1 - reset game
     setTimeElapsed(0);
     setMoveCount(0);
-    setShowCount(0);
+    setShownCount(0);
     setGridItems([]);
 
     // step 2 - create grid
@@ -52,7 +60,15 @@ const App = () => {
   }
 
   const handleItemClick = (index: number) => {
+    if (playing && index !== null && shownCount < 2) {
+      let tmpGrid = [...gridItems];
 
+      if (tmpGrid[index].permanentShown === false && tmpGrid[index].shown === false) {
+        tmpGrid[index].shown = true;
+        setShownCount(shownCount + 1);
+      }
+      setGridItems(tmpGrid);
+    }
   }
 
   return (
@@ -66,7 +82,7 @@ const App = () => {
         <C.InfoArea>
           <InfoItem
             label="tempo"
-            value="00:00"
+            value={formatTimeElapsed(timeElapsed)}
           />
           <InfoItem
             label="Movimentos"
